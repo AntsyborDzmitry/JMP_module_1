@@ -1,4 +1,4 @@
-package dry1;
+package dry1.beans;
 
 public class Student {
     private long id;

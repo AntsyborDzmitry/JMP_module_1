@@ -1,4 +1,6 @@
-package dry1;
+package dry1.services.DAO;
+
+import dry1.beans.Student;
 
 import java.util.List;
 
