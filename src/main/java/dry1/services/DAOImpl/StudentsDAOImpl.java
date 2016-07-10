@@ -24,27 +24,17 @@ public class StudentsDAOImpl implements StudentsDAO {
     @Override
     public List<Student> getAllStudents() {
         List<Student> students = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
         String query = qf.getQuery(GET_ALL_STUDENTS);
-        try {
-            connection = connectionDAO.getConnection();
-            preparedStatement = connection.prepareStatement(query);
-            resultSet = preparedStatement.executeQuery();
+
+        try ( Connection connection = connectionDAO.getConnection();
+              PreparedStatement preparedStatement = connection.prepareStatement(query);
+              ResultSet  resultSet = preparedStatement.executeQuery();){
+
             while (resultSet.next()) {
                 students.add(createStudent(resultSet));
             }
         } catch (SQLException | IllegalArgumentException e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                closeResultSet(resultSet);
-                closePreparedStatement(preparedStatement);
-                closeConnection(connection);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
         }
         return students;
     }
@@ -52,84 +42,57 @@ public class StudentsDAOImpl implements StudentsDAO {
     @Override
     public Student getStudent(long id) {
         Student student = null;
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
         String query = qf.getQuery(GET_STUDENT);
-        try {
-            connection = connectionDAO.getConnection();
-            preparedStatement = connection.prepareStatement(query);
+
+        try ( Connection connection = connectionDAO.getConnection();
+              PreparedStatement preparedStatement = connection.prepareStatement(query);) {
+
             preparedStatement.setLong(1, id);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                student = createStudent(resultSet);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery();) {
+                while (resultSet.next()) {
+                    student = createStudent(resultSet);
+                }
             }
         } catch (SQLException | IllegalArgumentException  e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                closeResultSet(resultSet);
-                closePreparedStatement(preparedStatement);
-                closeConnection(connection);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
         }
         return student;
     }
 
     @Override
     public void saveStudent(Student student) {
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
         String query = qf.getQuery(SAVE_STUDENT);
-        try {
-            connection = connectionDAO.getConnection();
-            preparedStatement = connection.prepareStatement(query);
+
+        try ( Connection connection = connectionDAO.getConnection();
+              PreparedStatement preparedStatement = connection.prepareStatement(query);) {
+
             preparedStatement.setString(1, student.getName());
             preparedStatement.setInt(2, student.getAge());
             preparedStatement.setLong(3, student.getId());
             preparedStatement.executeUpdate();
         } catch (SQLException | IllegalArgumentException  e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                closeResultSet(resultSet);
-                closePreparedStatement(preparedStatement);
-                closeConnection(connection);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
     @Override
     public List<Student> getStudentsByAge(int from, int to) {
         List<Student> students = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement preparedStatement = null;
-        ResultSet resultSet = null;
         String query = qf.getQuery(GET_STUDENT_BY_AGE);
-        try {
-            connection = connectionDAO.getConnection();
-            preparedStatement = connection.prepareStatement(query);
+
+        try ( Connection connection = connectionDAO.getConnection();
+              PreparedStatement preparedStatement = connection.prepareStatement(query);) {
             preparedStatement.setInt(1, from);
             preparedStatement.setInt(2, to);
-            resultSet = preparedStatement.executeQuery();
-            while (resultSet.next()) {
-                students.add(createStudent(resultSet));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery();) {
+                while (resultSet.next()) {
+                    students.add(createStudent(resultSet));
+                }
             }
         } catch (SQLException | IllegalArgumentException e) {
             throw new RuntimeException(e);
-        } finally {
-            try {
-                closeResultSet(resultSet);
-                closePreparedStatement(preparedStatement);
-                closeConnection(connection);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
         }
         return students;
     }
@@ -141,23 +104,5 @@ public class StudentsDAOImpl implements StudentsDAO {
         student.setAge(rs.getInt("AGE"));
 
         return student;
-    }
-
-    private  void closeConnection (Connection cn) throws SQLException {
-        if (cn != null) {
-            cn.close();
-        }
-    }
-
-    private  void closeResultSet (ResultSet rs) throws SQLException {
-        if (rs != null) {
-            rs.close();
-        }
-    }
-
-    private  void closePreparedStatement (PreparedStatement ps) throws SQLException {
-        if (ps != null) {
-            ps.close();
-        }
     }
 }
